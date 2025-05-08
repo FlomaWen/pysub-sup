@@ -1,0 +1,112 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    background-color: #f5f5f5;
+    margin-top: 30px;
+}
+
+.chat-container {
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 1px 11px rgba(0, 0, 0, 0.27);
+    margin-top: 30px;
+    height: 600px;
+    position: relative;
+}
+
+.chat-header {
+    padding: 15px;
+    border-bottom: 1px solid #ececec;
+}
+
+.chat-header h3 {
+    margin: 0;
+    font-weight: 500;
+}
+
+.message-list-container {
+    padding: 15px;
+    overflow-y: auto;
+    height: calc(100% - 150px);
+}
+
+#messageForm {
+    padding: 15px;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    background-color: #fff;
+    border-top: 1px solid #ececec;
+}
+
+.message {
+    padding: 10px;
+    margin-bottom: 15px;
+    background-color: #f1f0f0;
+    border-radius: 5px;
+    position: relative;
+}
+
+.message-username {
+    font-weight: bold;
+    font-size: 0.9rem;
+    color: #0056b3;
+}
+
+.message-content {
+    margin-top: 5px;
+}
+
+.message-timestamp {
+    font-size: 0.7rem;
+    color: #777;
+    margin-top: 5px;
+}
+
+.message.self {
+    background-color: #d4edda;
+}
+
+.message.system {
+    background-color: #cce5ff;
+    font-style: italic;
+}
+
+.connecting {
+    text-align: center;
+    color: #777;
+}
+
+@media screen and (max-width: 730px) {
+    .chat-container {
+        margin-left: 10px;
+        margin-right: 10px;
+        margin-top: 10px;
+    }
+}
+
+#username-page {
+    text-align: center;
+}
+
+.hidden {
+    display: none;
+}
+
+.user-container {
+    float: right;
+    margin-right: 5px;
+}
+
+#messageArea {
+    padding-left: 0;
+}
+
+#messageArea li {
+    list-style-type: none;
+}

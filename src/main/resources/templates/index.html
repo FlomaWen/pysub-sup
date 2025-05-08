@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <title>Chat Application</title>
+    <link rel="stylesheet" href="/webjars/bootstrap/5.2.3/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/css/main.css" />
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h2>Chat Application</h2>
+                    </div>
+                    <div class="card-body">
+                        <div id="username-page">
+                            <div class="form-group">
+                                <h3 class="text-center">Enter your name</h3>
+                                <form id="usernameForm" name="usernameForm">
+                                    <div class="form-group">
+                                        <input type="text" id="name" class="form-control" placeholder="Username" autocomplete="off" />
+                                    </div>
+                                    <div class="form-group mt-3">
+                                        <button type="submit" class="btn btn-primary btn-block">Start Chatting</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div id="chat-page" class="d-none">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="chat-container">
+                                        <div class="chat-header">
+                                            <h3>Chat Room</h3>
+                                        </div>
+                                        <div class="message-list-container">
+                                            <ul id="messageArea" class="list-group">
+                                            </ul>
+                                        </div>
+                                        <form id="messageForm" name="messageForm">
+                                            <div class="input-group">
+                                                <input type="text" id="message" class="form-control" placeholder="Type a message..." autocomplete="off"/>
+                                                <div class="input-group-append">
+                                                    <button type="submit" class="btn btn-primary">Send</button>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/webjars/jquery/3.6.4/jquery.min.js"></script>
+    <script src="/webjars/bootstrap/5.2.3/js/bootstrap.min.js"></script>
+    <script src="/webjars/sockjs-client/1.5.1/sockjs.min.js"></script>
+    <script src="/webjars/stomp-websocket/2.3.4/stomp.min.js"></script>
+    <script src="/js/main.js"></script>
+</body>
+</html>

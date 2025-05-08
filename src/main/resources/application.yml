@@ -1,0 +1,25 @@
+spring:
+  cloud:
+    gcp:
+      project-id: prjfrmcloud
+      #credentials:
+        #location: file:./user021-prjfrmcloud-key.json
+      secretmanager:
+        enabled: false
+      #pubsub:
+        # For local development with emulator
+        #emulator-host: ${PUBSUB_EMULATOR_HOST:localhost:8085}
+  thymeleaf:
+    cache: false
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML
+  web:
+    resources:
+      static-locations: classpath:/static/
+management:
+  health:
+    pubsub:
+      enabled: false
+server:
+  port: 8080
