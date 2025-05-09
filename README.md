@@ -1,76 +1,104 @@
-# ChatRouter
+# Project Documentation: ChatRouter
 
-Un petit chat en temps réel basé sur Spring Boot, Spring Cloud GCP Pub/Sub et WebSocket (STOMP + SockJS).
+**Overview:**
 
----
+ChatRouter is a real-time chat application built using Spring Boot, Spring Cloud GCP Pub/Sub, and WebSocket technology (STOMP + SockJS). It allows users to exchange messages through a web interface, with the backend handling message routing and persistence via Google Pub/Sub. The application utilizes WebSocket for real-time communication between clients and the server, and Pub/Sub for asynchronous message handling and distribution.
 
-## 📦 Architecture
-[Browser Client] ↔ (STOMP/SockJS) ↔ [Spring Boot WebSocket Broker]
-│
-↓
-[Pub/Sub Publisher → Google Pub/Sub Topic]
-↑
-[Pub/Sub Subscriber → WebSocket Broker]
+**📦 Architecture:**
 
+The application follows a microservice architecture, with the following key components:
 
-1. **Front-end**
-    - Thymeleaf + WebJars (Bootstrap, jQuery, SockJS, STOMP).
-    - Page unique (`index.html`) qui se connecte au broker WebSocket embarqué et échange des `MessageDTO`.
-2. **Back-end**
-    - **ChatController**
-        - `@MessageMapping("/chat.sendMessage")` → convertit la `MessageDTO` reçue, ajoute un timestamp si nécessaire, la publie sur le topic Pub/Sub (`floriantheo-common-topic`), et la renvoie sur `/topic/common`.
-        - `@MessageMapping("/chat.addUser")` → ajoute l’utilisateur en session et diffuse un message système.
-    - **PubSubSubscriptionService**
-        - Deux adapters `PubSubInboundChannelAdapter` pour récupérer **manuellement** les messages de vos subscriptions (`sub-floriantheo-common`, `sub-floriantheo-user`) et les renvoyer sur les canaux Spring Integration.
-        - Deux handlers `@ServiceActivator` qui envoient via `SimpMessagingTemplate` vers les topics WebSocket correspondants et `ack()` les messages.
-3. **Pub/Sub**
-    - Topics :
-        - `floriantheo-common-topic`
-        - `floriantheo-user-topic`
-    - Subscriptions :
-        - `sub-floriantheo-common`
-        - `sub-floriantheo-user`
+- **Front-end:** Implemented using Thymeleaf, WebJars (Bootstrap, jQuery, SockJS, STOMP) and a single page (`index.html`) that connects to the WebSocket broker.
+- **Back-end:**
+  - **ChatController:** Handles WebSocket messages, adds timestamps, publishes messages to Pub/Sub, and broadcasts messages to relevant topics.
+  - **PubSubSubscriptionService:** Manually retrieves messages from Pub/Sub subscriptions using `PubSubInboundChannelAdapter` and forwards them to WebSocket topics using `SimpMessagingTemplate`.
+- **Pub/Sub:** Uses Google Pub/Sub for message queuing and asynchronous communication.
+  - **Topics:**
+    - `floriantheo-common-topic`
+    - `floriantheo-user-topic`
+  - **Subscriptions:**
+    - `sub-floriantheo-common`
+    - `sub-floriantheo-user`
 
----
+```mermaid
+sequenceDiagram
+    participant Browser
+    participant WebSocketBroker
+    participant PubSubPublisher
+    participant GooglePubSub
+    participant PubSubSubscriber
 
-## ⚙️ Prérequis
+    Browser->>WebSocketBroker: Connect (STOMP/SockJS)
+    Browser->>WebSocketBroker: Send Message (e.g., "/app/chat.sendMessage")
+    WebSocketBroker->>PubSubPublisher: Convert MessageDTO, add timestamp, publish to topic
+    PubSubPublisher->>GooglePubSub: Publish to "floriantheo-common-topic"
+    GooglePubSub->>PubSubSubscriber: Message available on "sub-floriantheo-common"
+    PubSubSubscriber->>WebSocketBroker: Send message to "/topic/common" via SimpMessagingTemplate
+    WebSocketBroker->>Browser: Broadcast Message
+```
 
-- Java 17+ (Corretto, OpenJDK…)
+**Key Components:**
+
+- **ChatController.java:** Handles incoming WebSocket messages, publishes them to the Pub/Sub topic, and sends them back to the WebSocket topic.
+- **PubSubSubscriptionService.java:** Contains the logic for subscribing to Pub/Sub topics and forwarding messages to the appropriate WebSocket topics. It uses PubSubInboundChannelAdapter to retrieve messages manually from subscriptions and SimpMessagingTemplate to send these messages to WebSocket topics.
+- **MessageDTO.java:** A record that represents the message format used throughout the application.
+- **WebSocketConfig.java:** Configures the WebSocket message broker and STOMP endpoints.
+- **PubSubConfig.java:** Configures the JacksonPubSubMessageConverter for message conversion.
+- **application.yml:** Contains the application's configuration, including GCP project ID, Pub/Sub emulator settings, and server port.
+
+**Topics and Subscriptions:**
+
+- **Topics:**
+  - `floriantheo-common-topic`: Used for general chat messages.
+  - `floriantheo-user-topic`: Used for user-specific messages.
+- **Subscriptions:**
+  - `sub-floriantheo-common`: Subscription for the floriantheo-common-topic.
+  - `sub-floriantheo-user`: Subscription for the floriantheo-user-topic.
+
+**Front-end details:**
+
+The `index.html` file serves as the main entry point for the chat application. It uses JavaScript (`main.js`) to handle WebSocket connections, send messages, and display received messages.
+The `main.js` file uses the SockJS and STOMP libraries to establish a WebSocket connection with the server.
+
+**How messages are sent:**
+
+The user enters a message in the input field and submits the form.
+The `sendMessage()` function in `main.js` is called.
+The `sendMessage()` function retrieves the message text and constructs a `MessageDTO` object.
+The `sendMessage()` function uses the STOMP client to send the `MessageDTO` to the `/app/chat.sendMessage` endpoint on the server.
+The `ChatController.sendMessage()` method in `ChatController.java` handles the message on the server.
+The `sendMessage()` method adds a timestamp to the message if it is missing.
+The `sendMessage()` method serializes the message to JSON using `objectMapper.writeValueAsString()`.
+The `sendMessage()` method publishes the JSON string to the `floriantheo-common-topic` Pub/Sub topic using `pubSubTemplate.publish()`.
+The `sendMessage()` method also returns the original `MessageDTO` object, which is then sent to the `/topic/common` WebSocket topic, and broadcast to all connected clients.
+
+**🚀 Local Execution:**
+
+To run the application locally, the following prerequisites are required:
+
+- Java 17+
 - Maven 3.8+
-- GCP SDK (optionnel si vous utilisez un emulator)
-- Compte de service JSON avec les droits Pub/Sub
-- Si local : l’émulateur Pub/Sub
+- GCP SDK (optional if using an emulator)
+- Service account JSON with Pub/Sub permissions
+- Pub/Sub emulator (if running locally)
 
----
+Disable the Pub/Sub health check in `application.yml` to avoid issues when running locally:
 
-## 🚀 Lancer en local
+```
+management:
+  health:
+    pubsub:
+      enabled: false
+```
 
-1. **Désactiver le healthcheck Pub/Sub**
-   ```yaml
-   management:
-     health:
-       pubsub:
-         enabled: false
-   
+Open `http://localhost:8080/` in your browser.
 
-Ouvrir http://localhost:8080/ dans votre navigateur.
+**🚧 Potential Issues:**
 
+The README mentions a potential issue with `JacksonPubSubMessageConverter` failing to deserialize `MessageDTO` if it's a record without a default constructor or `@JsonCreator` annotation. The `ChatController` serializes the `MessageDTO` to JSON before publishing to PubSub as a workaround.
 
-🚧 Problème actuel
-JacksonPubSubMessageConverter n’arrive pas à désérialiser la MessageDTO reçue :
+**Improvements:**
 
-javascript
-Copier
-Modifier
-Cannot construct instance of `com.floraintheo.chatrouter.MessageDTO`…
-no String-argument constructor/factory method to deserialize from String value
-Cause probable : votre MessageDTO est un record (ou n’a pas de constructeur public no-arg) et la conversion JSON → objet échoue.
-
-Pistes de résolution :
-
-Ajouter un constructeur par défaut ou annoté @JsonCreator.
-
-Vérifier que vous publiez bien un objet et non une chaîne JSON brute (utiliser pubSubTemplate.publish(topic, chatMessage) et non publish(topic, jsonString) si vous voulez que la conversion automatique fonctionne).
-
-
-
+Instead of publishing the JSON string, publish the `MessageDTO` object directly using `pubSubTemplate.publish(topic, chatMessage)`.
+Ensure the `MessageDTO` has a default constructor or a `@JsonCreator` annotation to resolve the deserialization issue with `JacksonPubSubMessageConverter`.
+Consider using Spring Cloud Stream for simplified Pub/Sub integration.
